@@ -10,11 +10,9 @@ const cookieParser = require('cookie-parser');
 const compression = require('compression');
 const cors = require('cors');
 const requestIp = require('request-ip');
-const geoip = require("geoip-lite");
-const maxmind = require('maxmind');
 const AppError = require('./utills/appError');
 const GlobalError = require('./utills/errorController');
-
+const unirest = require("unirest");
 // Routes
 const AdminRoutes = require("./admin/router/mainRouter");
 const UserRoutes = require("./user/router/main.router");
@@ -35,69 +33,8 @@ app.options('*', cors());
 app.use(express.static(path.join(__dirname, 'public')));
 // app.use("/api/images", express.static(path.join("images")));
 
-
 app.use(requestIp.mw());
 
-// Load the GeoIP2 database
-maxmind.open('path/to/GeoIP2-City.mmdb', (err, cityLookup) => {
-  if (err) {
-    console.log('Error occurred while opening GeoIP2 database:', err);
-    return;
-  }
-});
-
-// API endpoint to retrieve address details
-app.get('/api/address/:ip', (req, res) => {
-  const ip = req.params.ip;
-
-  // Get the address details for the IP address
-  const location = cityLookup.get(ip);
-
-  if (location) {
-    // Extract the address components
-    const country = location.country.names.en;
-    const region = location.subdivisions[0].names.en;
-    const city = location.city.names.en;
-    const timezone = location.location.time_zone;
-    const postalCode = location.postal.code;
-    const latitude = location.location.latitude;
-    const longitude = location.location.longitude;
-
-    // Prepare the response JSON
-    const address = {
-      country,
-      region,
-      city,
-      timezone,
-      postalCode,
-      latitude,
-      longitude,
-    };
-
-    res.json(address);
-  } else {
-    res.status(404).json({ error: 'Address not found' });
-  }
-});
-
-app.get('/location', (req, res) => {
-    console.log(req.clientIp)
-    const ip = req.clientIp;
-  
-    const geo = geoip.lookup(ip);
-    if (geo) {
-      // const { country, region, city } = geo;
-      // const location = {
-      //   ip,
-      //   country,
-      //   region,
-      //   city
-      // };
-      res.json(geo);
-    } else {
-      res.status(500).json({ error: 'Unable to fetch location data' });
-    }
-  });
 // Route to retrieve the user's resized photo
 app.get('/api/users/:filename', (req, res) => {
     const { filename } = req.params;
@@ -132,6 +69,21 @@ app.use((req, res, next) => {
     req.requestTime = new Date().toISOString();
     // console.log(req.cookies);
     next();
+});
+
+app.get("/lo", (req, res) => {
+  var apiCall = unirest("GET",
+    "https://ip-geolocation-ipwhois-io.p.rapidapi.com/json/"
+  );
+  apiCall.headers({
+    "x-rapidapi-host": "ip-geolocation-ipwhois-io.p.rapidapi.com",
+    "x-rapidapi-key": "5c31272734msh101093d0d53fa5ep14b034jsnf32fb30feb1b"
+  });
+  apiCall.end(function(result) {
+    if (res.error) throw new Error(result.error);
+    console.log(result.body);
+    res.send(result.body);
+  });
 });
 
 
