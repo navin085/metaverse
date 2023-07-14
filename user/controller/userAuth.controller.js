@@ -356,7 +356,7 @@ exports.getPlayerLocation = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: "Get player location successfully",
-    data: locationData,
+    data: playerLocation,
   });
 });
 
