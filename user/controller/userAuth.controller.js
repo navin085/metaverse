@@ -5,8 +5,6 @@ const User = require("../model/user.model");
 const catchAsync = require("../../utills/catchAsync");
 const AppError = require("../../utills/appError");
 const Email = require("../../utills/email");
-const requestIp = require("request-ip");
-const geoip = require("geoip-lite");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -329,23 +327,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, req, res);
 });
 
-exports.getPlayerLocation = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
 
-  // 1) Check if user exists
-  if (!user) {
-    return next(new AppError("User not found", 401));
-  }
-
-  console.log(req.ip)
-  // 2) Fetch player's location using IP geolocation
-  const playerIp = req.ip; // Assuming req.ip holds the player's IP address
-  const playerLocation = geoip.lookup(playerIp);
-
-  res.status(200).json({
-    status: "success",
-    message: "Get player location successfully",
-    data: playerLocation,
-  });
-});
 

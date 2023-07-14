@@ -19,8 +19,6 @@ router.use(authController.protect);
 
 router.patch("/updatePassword", authController.updatePassword);
 
-router.get("/getPlayerLocation", authController.getPlayerLocation);
-
 router.get("/getProfile", userController.getMe, userController.getUser);
 router.patch(
   "/updateProfile",

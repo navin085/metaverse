@@ -12,7 +12,6 @@ const cors = require('cors');
 const requestIp = require('request-ip');
 const AppError = require('./utills/appError');
 const GlobalError = require('./utills/errorController');
-const unirest = require("unirest");
 // Routes
 const AdminRoutes = require("./admin/router/mainRouter");
 const UserRoutes = require("./user/router/main.router");
@@ -69,21 +68,6 @@ app.use((req, res, next) => {
     req.requestTime = new Date().toISOString();
     // console.log(req.cookies);
     next();
-});
-
-app.get("/lo", (req, res) => {
-  var apiCall = unirest("GET",
-    "https://ip-geolocation-ipwhois-io.p.rapidapi.com/json/"
-  );
-  apiCall.headers({
-    "x-rapidapi-host": "ip-geolocation-ipwhois-io.p.rapidapi.com",
-    "x-rapidapi-key": "5c31272734msh101093d0d53fa5ep14b034jsnf32fb30feb1b"
-  });
-  apiCall.end(function(result) {
-    if (res.error) throw new Error(result.error);
-    console.log(result.body);
-    res.send(result.body);
-  });
 });
 
 
