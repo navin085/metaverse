@@ -343,7 +343,8 @@ exports.getPlayerLocation = catchAsync(async (req, res, next) => {
   // 2) Fetch player's location using IP geolocation
   const playerIp = req.ip; // Assuming req.ip holds the player's IP address
   const playerLocation = await getLocationByIp(playerIp);
-
+  console.log(playerIp, "ip")
+  console.log(playerLocation, "playerloc")
   res.status(200).json({
     status: "success",
     message: "Get player location successfully",
@@ -357,7 +358,7 @@ async function getLocationByIp(ip) {
     const response = await axios.get(
       `https://maps.googleapis.com/maps/api/geocode/json?address=${ip}`
     );
-  
+  console.log(response, "res")
     const { results } = response.data;
     if (results && results.length > 0) {
       const { formatted_address, address_components } = results[0];
