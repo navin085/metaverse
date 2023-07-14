@@ -11,7 +11,7 @@ const compression = require('compression');
 const cors = require('cors');
 const requestIp = require('request-ip');
 const geoip = require("geoip-lite");
-
+const maxmind = require('maxmind');
 const AppError = require('./utills/appError');
 const GlobalError = require('./utills/errorController');
 
@@ -37,6 +37,48 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use(requestIp.mw());
+
+// Load the GeoIP2 database
+maxmind.open('path/to/GeoIP2-City.mmdb', (err, cityLookup) => {
+  if (err) {
+    console.log('Error occurred while opening GeoIP2 database:', err);
+    return;
+  }
+});
+
+// API endpoint to retrieve address details
+app.get('/api/address/:ip', (req, res) => {
+  const ip = req.params.ip;
+
+  // Get the address details for the IP address
+  const location = cityLookup.get(ip);
+
+  if (location) {
+    // Extract the address components
+    const country = location.country.names.en;
+    const region = location.subdivisions[0].names.en;
+    const city = location.city.names.en;
+    const timezone = location.location.time_zone;
+    const postalCode = location.postal.code;
+    const latitude = location.location.latitude;
+    const longitude = location.location.longitude;
+
+    // Prepare the response JSON
+    const address = {
+      country,
+      region,
+      city,
+      timezone,
+      postalCode,
+      latitude,
+      longitude,
+    };
+
+    res.json(address);
+  } else {
+    res.status(404).json({ error: 'Address not found' });
+  }
+});
 
 app.get('/location', (req, res) => {
     console.log(req.clientIp)
