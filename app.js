@@ -44,14 +44,14 @@ app.get('/location', (req, res) => {
   
     const geo = geoip.lookup(ip);
     if (geo) {
-      const { country, region, city } = geo;
-      const location = {
-        ip,
-        country,
-        region,
-        city
-      };
-      res.json(location);
+      // const { country, region, city } = geo;
+      // const location = {
+      //   ip,
+      //   country,
+      //   region,
+      //   city
+      // };
+      res.json(geo);
     } else {
       res.status(500).json({ error: 'Unable to fetch location data' });
     }

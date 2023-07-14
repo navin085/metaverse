@@ -7,7 +7,6 @@ const AppError = require("../../utills/appError");
 const Email = require("../../utills/email");
 const requestIp = require("request-ip");
 const geoip = require("geoip-lite");
-const axios = require('axios');
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -338,13 +337,11 @@ exports.getPlayerLocation = catchAsync(async (req, res, next) => {
     return next(new AppError("User not found", 401));
   }
 
-  console.log(req.ip);
-
+  console.log(req.ip)
   // 2) Fetch player's location using IP geolocation
   const playerIp = req.ip; // Assuming req.ip holds the player's IP address
-  const playerLocation = await getLocationByIp(playerIp);
-  console.log(playerIp, "ip")
-  console.log(playerLocation, "playerloc")
+  const playerLocation = geoip.lookup(playerIp);
+
   res.status(200).json({
     status: "success",
     message: "Get player location successfully",
@@ -352,40 +349,3 @@ exports.getPlayerLocation = catchAsync(async (req, res, next) => {
   });
 });
 
-
-async function getLocationByIp(ip) {
-  try {
-    const response = await axios.get(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${ip}`
-    );
-  console.log(response, "res")
-    const { results } = response.data;
-    if (results && results.length > 0) {
-      const { formatted_address, address_components } = results[0];
-  
-      const country = getComponentValue(address_components, 'country');
-      const region = getComponentValue(address_components, 'administrative_area_level_1');
-      const city = getComponentValue(address_components, 'locality');
-  
-      return {
-        ip,
-        country,
-        region,
-        city,
-        formatted_address
-      };
-    }
-  } catch (error) {
-    console.error(error);
-  }
-  
-  return null;
-}
-
-function getComponentValue(addressComponents, type) {
-  const component = addressComponents.find(component =>
-    component.types.includes(type)
-  );
-  
-  return component ? component.long_name : '';
-}
