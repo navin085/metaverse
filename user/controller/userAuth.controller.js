@@ -15,13 +15,13 @@ const signToken = (id) => {
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
 
-  res.cookie("jwt", token, {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-    secure: req.secure || req.headers["x-forwarded-proto"] === "https",
-  });
+  // res.cookie("jwt", token, {
+  //   expires: new Date(
+  //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+  //   ),
+  //   httpOnly: true,
+  //   secure: req.secure || req.headers["x-forwarded-proto"] === "https",
+  // });
 
   // Remove password from output
   user.password = undefined;
@@ -47,11 +47,11 @@ const signTokenForVerification = (user) => {
 const createSendTokenVerify = (user, statusCode, req, res) => {
   const token = signTokenForVerification(user);
 
-  res.cookie("jwt", token, {
-    expires: new Date(Date.now() + 60 * 24 * 3600000),
-    httpOnly: true,
-    secure: req.secure || req.headers["x-forwarded-proto"] === "https",
-  });
+  // res.cookie("jwt", token, {
+  //   expires: new Date(Date.now() + 60 * 24 * 3600000),
+  //   httpOnly: true,
+  //   secure: req.secure || req.headers["x-forwarded-proto"] === "https",
+  // });
 
   user.password = undefined;
 
@@ -171,6 +171,7 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError("Incorrect email or password", 401));
   }
 
+  console.log(user)
   // 4) If everything is okay, send token to the client
   createSendToken(user, 200, req, res);
 });
@@ -185,9 +186,9 @@ exports.protect = catchAsync(async (req, res, next) => {
   ) {
     token = req.headers.authorization.split(' ')[1];
   }
-  else if (req.cookies.jwt) {
-    token = req.cookies.jwt;
-  }
+  // else if (req.cookies.jwt) {
+  //   token = req.cookies.jwt;
+  // }
 
   if (!token) {
     return next(
@@ -198,8 +199,10 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 2) Verification token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
+  console.log(decoded)
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
+  console.log(currentUser)
   if (!currentUser) {
     return next(
       new AppError(

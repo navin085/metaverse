@@ -15,7 +15,7 @@ const GlobalError = require('./utills/errorController');
 // Routes
 const AdminRoutes = require("./admin/router/mainRouter");
 const UserRoutes = require("./user/router/main.router");
-
+const supportRouter = require("./user/router/userRouter/support.router");
 // Start express app
 const app = express();
 
@@ -32,7 +32,7 @@ app.options('*', cors());
 app.use(express.static(path.join(__dirname, 'public')));
 // app.use("/api/images", express.static(path.join("images")));
 
-app.use(requestIp.mw());
+
 
 // Route to retrieve the user's resized photo
 app.get('/api/users/:filename', (req, res) => {
@@ -71,6 +71,8 @@ app.use((req, res, next) => {
 });
 
 
+// app.use("/api/v1/support", supportRouter)
+
 // 3) ROUTES
 app.use('/api/v1/metaverse', 
 AdminRoutes,
@@ -78,7 +80,10 @@ UserRoutes
 );
 
 
+
+
 app.all('*', (req, res, next) => {
+  
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 

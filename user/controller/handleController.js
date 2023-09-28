@@ -93,3 +93,47 @@ exports.getAll = (Model) =>
       },
     });
   });
+
+exports.getAll_users = Model =>
+  catchAsync(async (req, res, next) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const filter = req.query.filter || '';
+
+    const sortField = req.query.sortField || 'createdAt';
+    const sortOrder = req.query.sortOrder.toLowerCase() || 'desc';
+
+    const skip = (page - 1) * limit;
+    const sortOptions = {};
+    sortOptions[sortField] = sortOrder === 'desc' ? -1 : 1;
+
+    const query = Model.find({
+      name: { $regex: filter, $options: 'i' }, // Case-insensitive filter on the name field
+    })
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limit)
+      .exec();
+
+    await Promise.all([
+      query,
+      Model.countDocuments({
+        name: { $regex: filter, $options: 'i' }, // Case-insensitive filter on the name field
+      })
+    ])
+      .then(([data, totalCount]) => {
+        res.json(
+          {
+            data,
+            page,
+            limit,
+            totalCount
+          }
+        );
+      })
+      .catch(err => {
+        console.error('Error retrieving data:', err);
+        res.status(500).json({ error: 'An error occurred' });
+      });
+
+  });

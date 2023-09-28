@@ -15,8 +15,7 @@ const AdminSchema = new mongoose.Schema({
     validate: [validator.isEmail, 'Please provide a valid email']
   },
   profile_image: {
-    type: String,
-    default: ''
+    type: String
   },
   role: {
     type: String,
