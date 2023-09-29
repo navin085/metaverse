@@ -34,78 +34,90 @@ exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   next();
 });
 
+// exports.ticketRise = catchAsync(async (req, res, next) => {
+// try{
+
+//   // Check if a ticket with the same user and status "Open" already exists
+//   const existingTicket = await Support.findOne({
+//     userId: req.user.id,
+//     status: "Open",
+//   });
+
+//   if (existingTicket) {
+//     return next(new AppError("A ticket is already open for this user.", 404));
+//   }
+
+//   const supportTicket = new Support({
+//     userId:req.user.id,
+//     userQuery:[{
+//       message:req.body.message,
+//       image: req.file ? req.file.filename : "",
+//     }]
+
+//   });
+//   // Save the support ticket to the database
+//   await supportTicket.save();
+
+//   res.status(201).json({
+//     status: "success",
+//     data: 
+//       supportTicket,
+
+//   });
+// }catch(error) {
+//   console.error("Error saving event:", error.message);
+// };
+
+// });
+
 exports.ticketRise = catchAsync(async (req, res, next) => {
-try{
-  console.log("pic",req.file)
-  // Check if a ticket with the same user and status "Open" already exists
-  const existingTicket = await Support.findOne({
-    userId: req.user.id,
-    status: "Open",
-  });
+  try {
+    // Find the user's open ticket
+    const existingTicket = await Support.findOne({
+      userId: req.user.id,
+      status: "Open",
+    });
 
-  if (existingTicket) {
-    return next(new AppError("A ticket is already open for this user.", 404));
+    if (existingTicket) {
+      // If an open ticket exists, add the new message to the existing ticket
+      existingTicket.userQuery.push({
+        message: req.body.message,
+        image: req.file ? req.file.filename : "",
+      });
+
+      // Save the updated ticket to the database
+      await existingTicket.save();
+
+      return res.status(200).json({
+        status: "success",
+        data: existingTicket,
+      });
+    } else {
+      // If no open ticket exists, create a new one
+      const supportTicket = new Support({
+        userId: req.user.id,
+        userQuery: [
+          {
+            message: req.body.message,
+            image: req.file ? req.file.filename : "",
+          },
+        ],
+      });
+
+      // Save the new support ticket to the database
+      await supportTicket.save();
+
+      return res.status(201).json({
+        status: "success",
+        data: supportTicket,
+      });
+    }
+  } catch (error) {
+    console.error("Error saving event:", error.message);
+    next(error);
   }
-
-  const supportTicket = new Support({
-    userId:req.user.id,
-    userQuery:[{
-      message:req.body.message,
-      image: req.file ? req.file.filename : "",
-    }]
-
-  });
-  // Save the support ticket to the database
-  await supportTicket.save();
-
-  res.status(201).json({
-    status: "success",
-    data: 
-      supportTicket,
-
-  });
-}catch(error) {
-  console.error("Error saving event:", error.message);
-};
-
 });
 
-// exports.addQuestion = catchAsync(async (req, res, next) => {
-
-//   const { id } = req.params;
-//   const { message } = req.body;
-
-//   const supportTicket = await Support.findById(id);
-//   console.log("supportTicket",supportTicket)
-
-//   if (!supportTicket) {
-//     return res.status(404).json({ message: 'Support ticket not found' });
-//   }
-
-//   // Check if the status is "Open"
-//   if (supportTicket.status !== 'Open') {
-//     return res.status(400).json({ message: 'Support ticket is not open for replies' });
-//   }
-
-//   // // Validate input data
-//   // if (!supportTicket.userQuery.reply) {
-//   //   return res.status(400).json({ message: 'Reply message is required' });
-//   // }
-
-//   // Find and update the support ticket with the admin's reply
-//   const addQuestion = await Support.findByIdAndUpdate(
-//     id,
-//     { $push: { 'userQuery': { message:message } { image: req.file ? req.file.filename : "" } } },
-//     { new: true }
-//   );
-
-//   if (!addQuestion) {
-//     return res.status(404).json({ message: 'Support ticket not found' });
-//   }
-
-//   res.status(200).json({ status: 'success', data: addQuestion });
-  
-// });
 
 exports.addQuestion = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -163,31 +175,18 @@ exports.replyTicket = catchAsync(async (req, res, next) => {
  
 });
 
-// exports.replyTicket = catchAsync(async (req, res, next) => {
-//   const { id } = req.params;
-//   const { reply } = req.body;
-
-//     // Find the support ticket by ID and validate its status
-//     const supportTicket = await Support.findOneAndUpdate(
-//       { _id: id, status: 'Open' },
-//       { $push: { 'adminReplies': { reply:reply } } },
-//       { new: true }
-//     );
-
-//     if (!supportTicket) {
-//       return res.status(404).json({ message: 'Support ticket not found or not open for replies' });
-//     }
-
-//     res.status(200).json({ status: 'success', data: supportTicket });
- 
-// });
 
 // exports.updateStatus = catchAsync(async (req, res, next) => {
 //   const { id } = req.params;
 //   const { status } = req.body;
+
+//     // Validate the status field
+//     if (!status || (status !== 'Open' && status !== 'Closed')) {
+//       return res.status(400).json({ message: 'Invalid status value' });
+//     }
+
 //     // Find the support ticket by ID
 //     const supportTicket = await Support.findById(id);
-//     console.log("supportTicket",supportTicket)
 
 //     if (!supportTicket) {
 //       return res.status(404).json({ message: 'Support ticket not found' });
@@ -198,39 +197,35 @@ exports.replyTicket = catchAsync(async (req, res, next) => {
 //       return res.status(400).json({ message: 'Support ticket already closed' });
 //     }
 
-//     // Validate input data
-//     if (!status) {
-//       return res.status(400).json({ message: 'status is required' });
-//     }
-
-//     // Add the admin's reply to the userQuery array
-//     supportTicket.status=status;
-
-//     // Save the updated support ticket
+//     // Update the status field in the support ticket document
+//     supportTicket.status = status;
 //     await supportTicket.save();
 
 //     res.status(200).json({ status: 'success', data: supportTicket });
- 
+  
 // });
+
 
 exports.updateStatus = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const { status } = req.body;
+  const userId = req.user.id; // Assuming you want to check if the user owns the ticket
 
-    // Validate the status field
-    if (!status || (status !== 'Open' && status !== 'Closed')) {
-      return res.status(400).json({ message: 'Invalid status value' });
-    }
+  // Validate the status field
+  if (!status || (status !== 'Open' && status !== 'Closed')) {
+    return res.status(400).json({ message: 'Invalid status value' });
+  }
 
-    // Find the support ticket by ID
-    const supportTicket = await Support.findById(id);
+  try {
+    // Find the support ticket by ID and user ID
+    const supportTicket = await Support.findOne({ _id: id, userId });
 
     if (!supportTicket) {
       return res.status(404).json({ message: 'Support ticket not found' });
     }
 
     // Check if the status is "Open"
-    if (supportTicket.status === 'Closed') {
+    if (supportTicket.status === 'Closed' && status === 'Open') {
       return res.status(400).json({ message: 'Support ticket already closed' });
     }
 
@@ -239,42 +234,11 @@ exports.updateStatus = catchAsync(async (req, res, next) => {
     await supportTicket.save();
 
     res.status(200).json({ status: 'success', data: supportTicket });
-  
+  } catch (error) {
+    console.error('Error updating support ticket status:', error.message);
+    next(error);
+  }
 });
-
-
-// exports.updateStatus = catchAsync(async (req, res, next) => {
-//   const { id } = req.params;
-//   const { status } = req.body;
-
-//   try {
-//     // Find the support ticket by ID
-//     const supportTicket = await Support.findById(id);
-
-//     if (!supportTicket) {
-//       return res.status(404).json({ message: 'Support ticket not found' });
-//     }
-
-//     // Check if the status is "Open"
-//     if (supportTicket.status === 'Closed') {
-//       return res.status(400).json({ message: 'Support ticket already closed' });
-//     }
-
-//     // Validate the status field
-//     if (!status || (status !== 'Open' && status !== 'Closed')) {
-//       return res.status(400).json({ message: 'Invalid status value' });
-//     }  
-
-//     const updateTicket = await Support.findByIdAndUpdate(id, { status: status }, { new: true });
-//     updateTicket.status = status;
-//     await supportTicket.save();
-
-//     res.status(200).json({ status: 'success', data: supportTicket });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: error.message });
-//   }
-// });
 
 
 exports.deleteTicket = catchAsync(async (req, res, next) => {
@@ -332,7 +296,7 @@ exports.getAllTicket = catchAsync(async (req, res, next) => {
 exports.getTicketById = catchAsync(async (req, res, next) => {
   const support = await Support.findById(req.params.id);
   if (!support) {
-    return next(new AppError("Event not found.", 404));
+    return next(new AppError("Data not found.", 404));
   }
   res.status(200).json({
     status: "success",

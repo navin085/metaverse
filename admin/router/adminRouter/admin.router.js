@@ -27,6 +27,8 @@ router.delete("/deleteMe", adminController.deleteMe);
 //User
 router.get('/get/all_users', userController.getAll_users);
 
+router.post('/delete/user/:id', userController.deleteUser);
+
 //support
 router.put('/reply-ticket/:id', supportController.replyTicket);
 router.get('/getAll/ticket', supportController.getAllTicket);

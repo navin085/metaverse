@@ -14,7 +14,7 @@ supportController.resizeUserPhoto,
 supportController.ticketRise
 );
 
-router.post('/update-status/:id',
+router.post('/update_status/:id',
 supportController.updateStatus);
 
 router.post('/add-question/:id', 
@@ -23,6 +23,6 @@ supportController.resizeUserPhoto,
 supportController.addQuestion
 );
 
-router.get('/getSingleUsersAllTickets', supportController.getSingleUsersAllTickets);
+router.get('/get_user_ticket', supportController.getSingleUsersAllTickets);
 
 module.exports = router;

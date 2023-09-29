@@ -49,14 +49,6 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
-app.use((req, res, next) => {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    next();
-});
-
-app.use(express.static(__dirname + '/dist/main'));
-
-app.get('/*', (req, res) => res.sendFile(path.join(__dirname)));
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
