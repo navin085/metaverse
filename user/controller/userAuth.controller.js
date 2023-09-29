@@ -55,7 +55,7 @@ const createSendTokenVerify = (user, statusCode, req, res) => {
 
   user.password = undefined;
 
-  let verificationLink = ` http://localhost:8080/api/v1/metaverse/user/verifyUser/${user.email}/${token}`;
+  let verificationLink = ` https://m-8p4o.onrender.com/api/v1/metaverse/user/verifyUser/${user.email}/${token}`;
 
   // Send verification email
    new Email(user, "passowrd", verificationLink).sendVerificationEmail();
@@ -250,7 +250,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 3) Send it to user's email
   try {
-    const resetURL = `http://localhost:8080/api/v1/metaverse/user/reset/${resetToken}`;
+    const resetURL = `https://m-8p4o.onrender.com/api/v1/metaverse/user/reset/${resetToken}`;
 
     new Email(user, "", resetURL).sendForgotPasswordEmail();
 
